@@ -30,13 +30,12 @@ function establishWispPipeline() {
     wsConnection.binaryType = "arraybuffer";
 
     wsConnection.onopen = () => {
-        // --- MANDATORY MERCURY WORKSHOP WISP V1 HANDSHAKE ---
         const handshakePacket = new Uint8Array(2);
-        handshakePacket[0] = 0x01; // Major
-        handshakePacket[1] = 0x00; // Minor
+        handshakePacket[0] = 0x01; // Major Version
+        handshakePacket[1] = 0x00; // Minor Version
         
         wsConnection.send(handshakePacket.buffer);
-        console.log("[Wisp] Handshake sent.");
+        console.log("[Wisp] Handshake verification sent.");
 
         statusBadge.textContent = `CONNECTED ROUTE: ${currentWispUrl}`;
         statusBadge.style.color = "var(--success-green)";
@@ -118,14 +117,17 @@ function sendWispHttpRequest(query) {
     const connectFrame = new Uint8Array(1 + 4 + 2 + hostBytes.length);
     connectFrame[0] = 0x01; 
     
+    // Write Stream ID (Positions 1-4)
     connectFrame[1] = (activeStreamId >> 24) & 0xFF;
     connectFrame[2] = (activeStreamId >> 16) & 0xFF;
     connectFrame[3] = (activeStreamId >> 8) & 0xFF;
     connectFrame[4] = activeStreamId & 0xFF;
     
+    // Write Target Port (Positions 5-6)
     connectFrame[5] = (port >> 8) & 0xFF;
     connectFrame[6] = port & 0xFF;
     
+    // Inject Destination Host
     connectFrame.set(hostBytes, 7);
     wsConnection.send(connectFrame.buffer);
 
@@ -141,6 +143,7 @@ function sendWispHttpRequest(query) {
     const dataFrame = new Uint8Array(1 + 4 + httpPayloadBytes.length);
     dataFrame[0] = 0x02; 
     
+    // Explicitly mirror Stream ID matching indices
     dataFrame[1] = connectFrame[1];
     dataFrame[2] = connectFrame[2];
     dataFrame[3] = connectFrame[3];
@@ -161,6 +164,8 @@ function handleIncomingWispPayload(arrayBuffer) {
     if (view.length < 5) return; 
 
     const packetType = view[0];
+    
+    // Decode incoming stream ID
     const receivedStreamId = (view[1] << 24) | (view[2] << 16) | (view[3] << 8) | view[4];
     if (receivedStreamId !== activeStreamId) return; 
 
@@ -170,7 +175,7 @@ function handleIncomingWispPayload(arrayBuffer) {
         collectedHtmlBuffer += decoder.decode(dataPayload);
     } 
     else if (packetType === 0x03) {
-        console.log(`[Wisp] Stream #${receivedStreamId} closed. Parsing HTML.`);
+        console.log(`[Wisp] Stream #${receivedStreamId} closed by remote. Rendering elements.`);
         parseAndRenderPureHtml(collectedHtmlBuffer);
     }
 }
