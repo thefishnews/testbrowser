@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Browser Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top Status and Configuration Header -->
+        <header class="main-header">
+            <div class="brand">
+                <h2>Wisp Transport Vector Engine</h2>
+                <div class="status-badge" id="network-status">Initializing...</div>
+            </div>
+            
+            <!-- Dynamic Wisp Proxy Configuration Panel -->
+            <div class="proxy-config-panel">
+                <div class="input-group">
+                    <label for="wisp-url-input">Wisp Endpoint:</label>
+                    <input type="text" id="wisp-url-input" placeholder="wss://your-wisp-proxy.com">
+                </div>
+                <button id="connect-btn" class="accent-btn">Update Route</button>
+            </div>
+        </header>
+
+        <!-- Search Navigation Control Bar -->
+        <section class="navigation-bar">
+            <div class="search-group">
+                <input type="text" id="query-input" placeholder="Enter target search query (e.g., Eaglercraft clients)...">
+                <button id="fetch-btn" class="primary-btn">Fetch Query</button>
+            </div>
+        </section>
+
+        <!-- Data Display Container (No Iframe Layout) -->
+        <main class="display-canvas" id="output-canvas">
+            <div class="placeholder-msg">
+                <p>Awaiting manual input submission stream over WebSockets.</p>
+                <small>Fallback Default Node: wss://anura.pro</small>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
