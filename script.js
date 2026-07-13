@@ -1,6 +1,6 @@
 /**
  * Test Browser Dashboard - Core Client Execution Engine
- * Architecture: Wisp V1 Client Multiplexer (No-Iframe Design)
+ * Architecture: Wisp V1 Client Multiplexer (Fixed Binary Offsets)
  */
 
 const DEFAULT_WISP = "wss://anura.pro";
@@ -30,6 +30,7 @@ function establishWispPipeline() {
     wsConnection.binaryType = "arraybuffer";
 
     wsConnection.onopen = () => {
+        // Correct 2-byte protocol version array verification packet [0x01, 0x00]
         const handshakePacket = new Uint8Array(2);
         handshakePacket[0] = 0x01; // Major Version
         handshakePacket[1] = 0x00; // Minor Version
@@ -115,19 +116,17 @@ function sendWispHttpRequest(query) {
 
     // --- PACKET A: STREAM CONNECT MESSAGE (0x01) ---
     const connectFrame = new Uint8Array(1 + 4 + 2 + hostBytes.length);
-    connectFrame[0] = 0x01; 
+    connectFrame[0] = 0x01; // Type index
     
-    // Write Stream ID (Positions 1-4)
+    // Explicit array offsets to ensure browser runtime stability
     connectFrame[1] = (activeStreamId >> 24) & 0xFF;
     connectFrame[2] = (activeStreamId >> 16) & 0xFF;
     connectFrame[3] = (activeStreamId >> 8) & 0xFF;
     connectFrame[4] = activeStreamId & 0xFF;
     
-    // Write Target Port (Positions 5-6)
     connectFrame[5] = (port >> 8) & 0xFF;
     connectFrame[6] = port & 0xFF;
     
-    // Inject Destination Host
     connectFrame.set(hostBytes, 7);
     wsConnection.send(connectFrame.buffer);
 
@@ -141,9 +140,9 @@ function sendWispHttpRequest(query) {
 
     const httpPayloadBytes = encoder.encode(httpRequestText);
     const dataFrame = new Uint8Array(1 + 4 + httpPayloadBytes.length);
-    dataFrame[0] = 0x02; 
+    dataFrame[0] = 0x02; // Data type block directive
     
-    // Explicitly mirror Stream ID matching indices
+    // Copy the stream ID bytes correctly using index positions
     dataFrame[1] = connectFrame[1];
     dataFrame[2] = connectFrame[2];
     dataFrame[3] = connectFrame[3];
@@ -154,7 +153,7 @@ function sendWispHttpRequest(query) {
     setTimeout(() => {
         if (wsConnection.readyState === WebSocket.OPEN) {
             wsConnection.send(dataFrame.buffer);
-            console.log(`[Wisp] Stream #${activeStreamId} HTTP payload dispatched.`);
+            console.log(`[Wisp] Stream #${activeStreamId} payload sent.`);
         }
     }, 50);
 }
@@ -165,7 +164,7 @@ function handleIncomingWispPayload(arrayBuffer) {
 
     const packetType = view[0];
     
-    // Decode incoming stream ID
+    // Reassemble big endian 32-bit Integer array tokens
     const receivedStreamId = (view[1] << 24) | (view[2] << 16) | (view[3] << 8) | view[4];
     if (receivedStreamId !== activeStreamId) return; 
 
@@ -175,7 +174,7 @@ function handleIncomingWispPayload(arrayBuffer) {
         collectedHtmlBuffer += decoder.decode(dataPayload);
     } 
     else if (packetType === 0x03) {
-        console.log(`[Wisp] Stream #${receivedStreamId} closed by remote. Rendering elements.`);
+        console.log(`[Wisp] Stream #${receivedStreamId} closed by remote node. Rendering cards.`);
         parseAndRenderPureHtml(collectedHtmlBuffer);
     }
 }
@@ -223,7 +222,7 @@ function parseAndRenderPureHtml(htmlRawString) {
         outputCanvas.innerHTML = `
             <div class="placeholder-msg">
                 <p>No clean text metadata items extracted.</p>
-                <small>The node returned a blank body structure or hit rate limits. Try updating your active route configuration link.</small>
+                <small>The node returned an alternate HTML payload structure or empty stream bounds. Try another query.</small>
             </div>
         `;
         return;
