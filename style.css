@@ -172,7 +172,6 @@ button:active {
     margin: 0 0 8px 0;
 }
 
-/* Extracted Item Container Styling */
 .result-card {
     background-color: var(--card-dark);
     border-left: 4px solid var(--accent-blue);

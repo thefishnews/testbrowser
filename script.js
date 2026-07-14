@@ -1,12 +1,12 @@
 /**
  * Test Browser Dashboard - Core Client Execution Engine
- * Architecture: Clear DataView Wisp Multiplexer Architecture
+ * Architecture: Clean DataView Wisp Multiplexer Architecture
  */
 
 const FALLBACK_NODE = "wss://anura.pro";
 let activeWispUrl = localStorage.getItem('wisp_proxy_url') || FALLBACK_NODE;
 let wsConnection = null;
-let currentStreamToken = 200; // Isolated offset block identifier
+let currentStreamToken = 200; 
 let structuralHtmlPipelineBuffer = "";
 
 const statusBadge = document.getElementById('network-status');
@@ -30,10 +30,9 @@ function initializeWispConnection() {
     wsConnection.binaryType = "arraybuffer";
 
     wsConnection.onopen = () => {
-        // Broadlink handshake verification protocol [Version Major: 0x01, Minor: 0x00]
         const validationBuffer = new Uint8Array(2);
-        validationBuffer[0] = 0x01;
-        validationBuffer[1] = 0x00;
+        validationBuffer[0] = 0x01; // Major Version
+        validationBuffer[1] = 0x00; // Minor Version
         
         wsConnection.send(validationBuffer.buffer);
         console.log("[Wisp] Protocol handshake dispatched successfully.");
@@ -79,7 +78,7 @@ fetchBtn.addEventListener('click', () => {
     outputCanvas.innerHTML = `
         <div class="placeholder-msg">
             <p>Streaming secure HTTP packet layer over Wisp pipeline...</p>
-            <small>Query Target: html.duckduckgo.com</small>
+            <small>Query Target: ://duckduckgo.com</small>
         </div>
     `;
 
@@ -92,13 +91,13 @@ function dispatchWispRequestPayload(searchQueryText) {
         outputCanvas.innerHTML = `
             <div class='placeholder-msg' style='color:var(--error-red);'>
                 <p>Error: Wisp socket pipeline is offline.</p>
-                <small>Verify network endpoint paths or check console logging frames.</small>
+                <small>Verify network endpoint paths or check configuration parameters.</small>
             </div>`;
         return;
     }
 
     const uriQueryToken = encodeURIComponent(searchQueryText);
-    const domainHostString = "html.duckduckgo.com";
+    const domainHostString = "://duckduckgo.com";
     const explicitNetworkPath = `/html/?q=${uriQueryToken}`;
     const destinationPort = 443; 
 
@@ -118,7 +117,7 @@ function dispatchWispRequestPayload(searchQueryText) {
     const initialBufferFrame = new ArrayBuffer(1 + 4 + 2 + domainBytesArray.length);
     const primaryDataView = new DataView(initialBufferFrame);
     
-    primaryDataView.setUint8(0, 0x01); // CONNECT Type flag bit
+    primaryDataView.setUint8(0, 0x01); // CONNECT Type flag
     primaryDataView.setUint32(1, currentStreamToken, false); // Stream ID Big Endian
     primaryDataView.setUint16(5, destinationPort, false); // Port 443 Big Endian
     
@@ -139,8 +138,8 @@ function dispatchWispRequestPayload(searchQueryText) {
     const payloadBufferFrame = new ArrayBuffer(1 + 4 + generatedHttpBytes.length);
     const secondaryDataView = new DataView(payloadBufferFrame);
     
-    secondaryDataView.setUint8(0, 0x02); // DATA Type flag bit
-    secondaryDataView.setUint32(1, currentStreamToken, false); // Mirror identical Stream Token ID
+    secondaryDataView.setUint8(0, 0x02); // DATA Type flag
+    secondaryDataView.setUint32(1, currentStreamToken, false); // Mirror structural tracking token
     
     const writePayloadByteArray = new Uint8Array(payloadBufferFrame);
     writePayloadByteArray.set(generatedHttpBytes, 5);
@@ -148,7 +147,7 @@ function dispatchWispRequestPayload(searchQueryText) {
     setTimeout(() => {
         if (wsConnection.readyState === WebSocket.OPEN) {
             wsConnection.send(payloadBufferFrame);
-            console.log(`[Wisp] Multiplex channel stream channel #${currentStreamToken} active.`);
+            console.log(`[Wisp] Multiplex channel stream channel #${currentStreamToken} dispatched.`);
         }
     }, 60);
 }
@@ -181,31 +180,32 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
     const stringIndexStart = htmlRawSourcePayload.indexOf("<html");
     const operationalHtmlSegmentString = stringIndexStart !== -1 ? htmlRawSourcePayload.substring(stringIndexStart) : htmlRawSourcePayload;
 
-    const structuralSplitBlocksArray = operationalHtmlSegmentString.split('class="result-links"');
+    // --- REWORKED DUCKDUCKGO CONTAINER EXTRACTION LOOP ---
+    const structuralSplitBlocksArray = operationalHtmlSegmentString.split('class="result__body"');
     
     for (let indexOffset = 1; indexOffset < structuralSplitBlocksArray.length; indexOffset++) {
         const independentBlockElement = structuralSplitBlocksArray[indexOffset];
 
         let targetTitleText = "Target Indexed Block Element";
-        const titleExtractionRegex = independentBlockElement.match(/class="result__url"[^>]*>([^<]+)/);
+        const titleExtractionRegex = independentBlockElement.match(/class="result__url"[^>]*>([\s\S]*?)<\/a>/);
         if (titleExtractionRegex && titleExtractionRegex[1]) {
-            targetTitleText = titleExtractionRegex[1].trim();
+            targetTitleText = titleExtractionRegex[1].replace(/<[^>]*>/g, "").trim();
         }
 
         let linkRedirectionUrl = "#";
-        const urlExtractionRegex = independentBlockElement.match(/href="([^"]+)"/);
+        const urlExtractionRegex = independentBlockElement.match(/class="result__url"[^>]*href="([^"]+)"/);
         if (urlExtractionRegex && urlExtractionRegex[1]) {
             linkRedirectionUrl = urlExtractionRegex[1];
             if (linkRedirectionUrl.includes("uddg=")) {
                 const innerSplits = linkRedirectionUrl.split("uddg=");
-                if (innerSplits[1]) {
+                if (innerSplits && innerSplits[1]) {
                     linkRedirectionUrl = decodeURIComponent(innerSplits[1].split("&")[0]);
                 }
             }
         }
 
         let summarySnippetText = "No descriptive information packet recovered along this stream lane.";
-        const snippetExtractionRegex = independentBlockElement.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+        const snippetExtractionRegex = independentBlockElement.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/span>/) || independentBlockElement.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
         if (snippetExtractionRegex && snippetExtractionRegex[1]) {
             summarySnippetText = snippetExtractionRegex[1].replace(/<[^>]*>/g, "").trim();
         }
@@ -217,7 +217,7 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
         outputCanvas.innerHTML = `
             <div class="placeholder-msg">
                 <p>No clean text metadata items extracted.</p>
-                <small>The node returned a structured captcha page, or hit network transmission timeouts. Adjust node fields.</small>
+                <small>The node returned a structured captcha challenge page, or hit network transmission timeouts. Verify node parameters.</small>
             </div>
         `;
         return;
