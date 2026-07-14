@@ -9,24 +9,24 @@
 <body>
 
     <div class="app-container">
-        <!-- Top Status and Configuration Header -->
+        <!-- System Control Header Matrix -->
         <header class="main-header">
             <div class="brand">
                 <h2>Wisp Transport Vector Engine</h2>
-                <div class="status-badge" id="network-status">Initializing...</div>
+                <div class="status-badge" id="network-status">Initializing Core Pipeline...</div>
             </div>
             
-            <!-- Dynamic Wisp Proxy Configuration Panel -->
+            <!-- Target Endpoint Routing Selector -->
             <div class="proxy-config-panel">
                 <div class="input-group">
-                    <label for="wisp-url-input">Wisp Endpoint:</label>
+                    <label for="wisp-url-input">Wisp Socket Gateway Entry:</label>
                     <input type="text" id="wisp-url-input" placeholder="wss://your-wisp-proxy.com">
                 </div>
                 <button id="connect-btn" class="accent-btn">Update Route</button>
             </div>
         </header>
 
-        <!-- Search Navigation Control Bar -->
+        <!-- Command Execution Row -->
         <section class="navigation-bar">
             <div class="search-group">
                 <input type="text" id="query-input" placeholder="Enter target search query (e.g., Eaglercraft clients)...">
@@ -34,7 +34,7 @@
             </div>
         </section>
 
-        <!-- Data Display Container (No Iframe Layout) -->
+        <!-- DOM Extraction Terminal Canvas -->
         <main class="display-canvas" id="output-canvas">
             <div class="placeholder-msg">
                 <p>Awaiting manual input submission stream over WebSockets.</p>

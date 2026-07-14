@@ -14,7 +14,7 @@
 body {
     background-color: var(--bg-dark);
     color: var(--text-primary);
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
     padding: 0;
     height: 100vh;
@@ -56,7 +56,6 @@ body {
     display: inline-block;
     font-size: 12px;
     font-weight: bold;
-    color: var(--text-muted);
 }
 
 .proxy-config-panel {
@@ -71,7 +70,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    flex-grow: 0.5;
+    flex-grow: 1;
+    max-width: 450px;
 }
 
 .input-group label {
@@ -82,20 +82,18 @@ body {
 }
 
 input[type="text"] {
-    padding: 10px 14px;
+    padding: 12px 14px;
     background-color: var(--card-dark);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     color: var(--text-primary);
     font-size: 14px;
     width: 100%;
-    min-width: 320px;
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
 #query-input {
-    width: 100%;
     font-size: 16px;
     padding: 14px;
 }
@@ -106,7 +104,7 @@ input[type="text"]:focus {
 }
 
 button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
     border-radius: 6px;
     font-size: 14px;
@@ -133,7 +131,6 @@ button:active {
 .primary-btn {
     background-color: var(--accent-blue);
     color: var(--text-primary);
-    padding: 14px 28px;
     font-size: 16px;
 }
 
@@ -175,6 +172,7 @@ button:active {
     margin: 0 0 8px 0;
 }
 
+/* Extracted Item Container Styling */
 .result-card {
     background-color: var(--card-dark);
     border-left: 4px solid var(--accent-blue);
@@ -182,13 +180,12 @@ button:active {
     border-radius: 6px;
     border-top: 1px solid rgba(255,255,255,0.02);
     box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-    animation: fadeIn 0.3s ease-out;
+    animation: layoutFadeIn 0.3s ease-out;
 }
 
 .result-card h3 {
     margin: 0 0 6px 0;
     font-size: 18px;
-    font-weight: 600;
 }
 
 .result-card a {
@@ -211,7 +208,7 @@ button:active {
     line-height: 1.5;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
+@keyframes layoutFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
 }

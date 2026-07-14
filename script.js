@@ -1,13 +1,13 @@
 /**
  * Test Browser Dashboard - Core Client Execution Engine
- * Architecture: Wisp V1 Client Multiplexer (Fixed Binary Offsets)
+ * Architecture: Clear DataView Wisp Multiplexer Architecture
  */
 
-const DEFAULT_WISP = "wss://anura.pro";
-let currentWispUrl = localStorage.getItem('wisp_proxy_url') || DEFAULT_WISP;
+const FALLBACK_NODE = "wss://anura.pro";
+let activeWispUrl = localStorage.getItem('wisp_proxy_url') || FALLBACK_NODE;
 let wsConnection = null;
-let activeStreamId = 100; 
-let collectedHtmlBuffer = "";
+let currentStreamToken = 200; // Isolated offset block identifier
+let structuralHtmlPipelineBuffer = "";
 
 const statusBadge = document.getElementById('network-status');
 const wispInput = document.getElementById('wisp-url-input');
@@ -16,29 +16,29 @@ const queryInput = document.getElementById('query-input');
 const fetchBtn = document.getElementById('fetch-btn');
 const outputCanvas = document.getElementById('output-canvas');
 
-wispInput.value = currentWispUrl;
+wispInput.value = activeWispUrl;
 
-function establishWispPipeline() {
+function initializeWispConnection() {
     if (wsConnection) {
         try { wsConnection.close(); } catch(e) {}
     }
 
-    statusBadge.textContent = "CONNECTING...";
+    statusBadge.textContent = "CONNECTING STREAM VECTOR...";
     statusBadge.style.color = "var(--text-muted)";
 
-    wsConnection = new WebSocket(currentWispUrl);
+    wsConnection = new WebSocket(activeWispUrl);
     wsConnection.binaryType = "arraybuffer";
 
     wsConnection.onopen = () => {
-        // Correct 2-byte protocol version array verification packet [0x01, 0x00]
-        const handshakePacket = new Uint8Array(2);
-        handshakePacket[0] = 0x01; // Major Version
-        handshakePacket[1] = 0x00; // Minor Version
+        // Broadlink handshake verification protocol [Version Major: 0x01, Minor: 0x00]
+        const validationBuffer = new Uint8Array(2);
+        validationBuffer[0] = 0x01;
+        validationBuffer[1] = 0x00;
         
-        wsConnection.send(handshakePacket.buffer);
-        console.log("[Wisp] Handshake verification sent.");
+        wsConnection.send(validationBuffer.buffer);
+        console.log("[Wisp] Protocol handshake dispatched successfully.");
 
-        statusBadge.textContent = `CONNECTED ROUTE: ${currentWispUrl}`;
+        statusBadge.textContent = `ONLINE: ${activeWispUrl}`;
         statusBadge.style.color = "var(--success-green)";
     };
 
@@ -47,202 +47,197 @@ function establishWispPipeline() {
         statusBadge.style.color = "var(--error-red)";
     };
 
-    wsConnection.onerror = (err) => {
-        console.error("[Wisp Error]", err);
+    wsConnection.onerror = (errorMatrix) => {
+        console.error("[Wisp Native Crash]", errorMatrix);
         statusBadge.textContent = "TRANSPORT ERROR: Routing channel failed.";
         statusBadge.style.color = "var(--error-red)";
     };
 
-    wsConnection.onmessage = (event) => {
-        handleIncomingWispPayload(event.data);
+    wsConnection.onmessage = (eventStream) => {
+        processIncomingWispBuffer(eventStream.data);
     };
 }
 
 connectBtn.addEventListener('click', () => {
-    let inputUrl = wispInput.value.trim();
-    if (!inputUrl) return;
+    let checkedUrl = wispInput.value.trim();
+    if (!checkedUrl) return;
     
-    if (!inputUrl.startsWith("ws://") && !inputUrl.startsWith("wss://")) {
-        inputUrl = "wss://" + inputUrl;
+    if (!checkedUrl.startsWith("ws://") && !checkedUrl.startsWith("wss://")) {
+        checkedUrl = "wss://" + checkedUrl;
     }
     
-    currentWispUrl = inputUrl;
-    wispInput.value = currentWispUrl;
-    localStorage.setItem('wisp_proxy_url', currentWispUrl);
-    establishWispPipeline();
+    activeWispUrl = checkedUrl;
+    wispInput.value = activeWispUrl;
+    localStorage.setItem('wisp_proxy_url', activeWispUrl);
+    initializeWispConnection();
 });
 
 fetchBtn.addEventListener('click', () => {
-    const query = queryInput.value.trim();
-    if (!query) return;
+    const rawInputText = queryInput.value.trim();
+    if (!rawInputText) return;
 
     outputCanvas.innerHTML = `
         <div class="placeholder-msg">
             <p>Streaming secure HTTP packet layer over Wisp pipeline...</p>
-            <small>Query Target: ://duckduckgo.com</small>
+            <small>Query Target: html.duckduckgo.com</small>
         </div>
     `;
 
-    collectedHtmlBuffer = ""; 
-    sendWispHttpRequest(query);
+    structuralHtmlPipelineBuffer = ""; 
+    dispatchWispRequestPayload(rawInputText);
 });
 
-function sendWispHttpRequest(query) {
+function dispatchWispRequestPayload(searchQueryText) {
     if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
         outputCanvas.innerHTML = `
             <div class='placeholder-msg' style='color:var(--error-red);'>
                 <p>Error: Wisp socket pipeline is offline.</p>
-                <small>Verify your proxy link routing constraints.</small>
+                <small>Verify network endpoint paths or check console logging frames.</small>
             </div>`;
         return;
     }
 
-    const encodedQuery = encodeURIComponent(query);
-    const host = "://duckduckgo.com";
-    const path = `/html/?q=${encodedQuery}`;
-    const port = 443; 
+    const uriQueryToken = encodeURIComponent(searchQueryText);
+    const domainHostString = "html.duckduckgo.com";
+    const explicitNetworkPath = `/html/?q=${uriQueryToken}`;
+    const destinationPort = 443; 
 
-    activeStreamId++; 
+    currentStreamToken++; 
     
-    const encoder = new TextEncoder();
-    const hostBytes = encoder.encode(host);
+    const arrayEncoder = new TextEncoder();
+    const domainBytesArray = arrayEncoder.encode(domainHostString);
 
     outputCanvas.innerHTML = `
         <div class="placeholder-msg">
             <p>Streaming secure HTTP packet layer over Wisp pipeline...</p>
-            <small>Query Target: https://${host}${path}</small>
+            <small>Query Target: https://${domainHostString}${explicitNetworkPath}</small>
         </div>
     `;
 
-    // --- PACKET A: STREAM CONNECT MESSAGE (0x01) ---
-    const connectFrame = new Uint8Array(1 + 4 + 2 + hostBytes.length);
-    connectFrame[0] = 0x01; // Type index
+    // --- PACKET HEADER CONFIGURATION A: CONNECT SCHEME (0x01) ---
+    const initialBufferFrame = new ArrayBuffer(1 + 4 + 2 + domainBytesArray.length);
+    const primaryDataView = new DataView(initialBufferFrame);
     
-    // Explicit array offsets to ensure browser runtime stability
-    connectFrame[1] = (activeStreamId >> 24) & 0xFF;
-    connectFrame[2] = (activeStreamId >> 16) & 0xFF;
-    connectFrame[3] = (activeStreamId >> 8) & 0xFF;
-    connectFrame[4] = activeStreamId & 0xFF;
+    primaryDataView.setUint8(0, 0x01); // CONNECT Type flag bit
+    primaryDataView.setUint32(1, currentStreamToken, false); // Stream ID Big Endian
+    primaryDataView.setUint16(5, destinationPort, false); // Port 443 Big Endian
     
-    connectFrame[5] = (port >> 8) & 0xFF;
-    connectFrame[6] = port & 0xFF;
+    const writeConnectByteArray = new Uint8Array(initialBufferFrame);
+    writeConnectByteArray.set(domainBytesArray, 7);
     
-    connectFrame.set(hostBytes, 7);
-    wsConnection.send(connectFrame.buffer);
+    wsConnection.send(initialBufferFrame);
 
-    // --- PACKET B: DATA PAYLOAD MESSAGE (0x02) ---
-    const httpRequestText = 
-        `GET ${path} HTTP/1.1\r\n` +
-        `Host: ${host}\r\n` +
+    // --- PACKET HEADER CONFIGURATION B: DATA TRANSMISSION SCHEME (0x02) ---
+    const rawHttpTextHeaderBlock = 
+        `GET ${explicitNetworkPath} HTTP/1.1\r\n` +
+        `Host: ${domainHostString}\r\n` +
         `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n` +
         `Accept: text/html\r\n` +
         `Connection: close\r\n\r\n`;
 
-    const httpPayloadBytes = encoder.encode(httpRequestText);
-    const dataFrame = new Uint8Array(1 + 4 + httpPayloadBytes.length);
-    dataFrame[0] = 0x02; // Data type block directive
+    const generatedHttpBytes = arrayEncoder.encode(rawHttpTextHeaderBlock);
+    const payloadBufferFrame = new ArrayBuffer(1 + 4 + generatedHttpBytes.length);
+    const secondaryDataView = new DataView(payloadBufferFrame);
     
-    // Copy the stream ID bytes correctly using index positions
-    dataFrame[1] = connectFrame[1];
-    dataFrame[2] = connectFrame[2];
-    dataFrame[3] = connectFrame[3];
-    dataFrame[4] = connectFrame[4];
+    secondaryDataView.setUint8(0, 0x02); // DATA Type flag bit
+    secondaryDataView.setUint32(1, currentStreamToken, false); // Mirror identical Stream Token ID
     
-    dataFrame.set(httpPayloadBytes, 5);
+    const writePayloadByteArray = new Uint8Array(payloadBufferFrame);
+    writePayloadByteArray.set(generatedHttpBytes, 5);
 
     setTimeout(() => {
         if (wsConnection.readyState === WebSocket.OPEN) {
-            wsConnection.send(dataFrame.buffer);
-            console.log(`[Wisp] Stream #${activeStreamId} payload sent.`);
+            wsConnection.send(payloadBufferFrame);
+            console.log(`[Wisp] Multiplex channel stream channel #${currentStreamToken} active.`);
         }
-    }, 50);
+    }, 60);
 }
 
-function handleIncomingWispPayload(arrayBuffer) {
-    const view = new Uint8Array(arrayBuffer);
-    if (view.length < 5) return; 
+function processIncomingWispBuffer(incomingArrayBuffer) {
+    const rawByteView = new Uint8Array(incomingArrayBuffer);
+    if (rawByteView.length < 5) return; 
 
-    const packetType = view[0];
-    
-    // Reassemble big endian 32-bit Integer array tokens
-    const receivedStreamId = (view[1] << 24) | (view[2] << 16) | (view[3] << 8) | view[4];
-    if (receivedStreamId !== activeStreamId) return; 
+    const rawDataView = new DataView(incomingArrayBuffer);
+    const responsePacketType = rawDataView.getUint8(0);
+    const incomingStreamId = rawDataView.getUint32(1, false);
 
-    if (packetType === 0x02) {
-        const dataPayload = view.subarray(5);
-        const decoder = new TextDecoder();
-        collectedHtmlBuffer += decoder.decode(dataPayload);
+    if (incomingStreamId !== currentStreamToken) return; 
+
+    if (responsePacketType === 0x02) {
+        const structuralDataSlice = rawByteView.subarray(5);
+        const arrayDecoder = new TextDecoder();
+        structuralHtmlPipelineBuffer += arrayDecoder.decode(structuralDataSlice);
     } 
-    else if (packetType === 0x03) {
-        console.log(`[Wisp] Stream #${receivedStreamId} closed by remote node. Rendering cards.`);
-        parseAndRenderPureHtml(collectedHtmlBuffer);
+    else if (responsePacketType === 0x03) {
+        console.log(`[Wisp] Tunnel closing execution code encountered for channel #${incomingStreamId}.`);
+        executeDataParsingSequence(structuralHtmlPipelineBuffer);
     }
 }
 
-function parseAndRenderPureHtml(htmlRawString) {
+function executeDataParsingSequence(htmlRawSourcePayload) {
     outputCanvas.innerHTML = "";
-    const processedSearchItems = [];
+    const cleanOutputDictionaryArray = [];
 
-    const htmlBodyStart = htmlRawString.indexOf("<html");
-    const functionalHtmlString = htmlBodyStart !== -1 ? htmlRawString.substring(htmlBodyStart) : htmlRawString;
+    const stringIndexStart = htmlRawSourcePayload.indexOf("<html");
+    const operationalHtmlSegmentString = stringIndexStart !== -1 ? htmlRawSourcePayload.substring(stringIndexStart) : htmlRawSourcePayload;
 
-    const elementsArray = functionalHtmlString.split('class="result-links"');
+    const structuralSplitBlocksArray = operationalHtmlSegmentString.split('class="result-links"');
     
-    for (let i = 1; i < elementsArray.length; i++) {
-        const itemBlock = elementsArray[i];
+    for (let indexOffset = 1; indexOffset < structuralSplitBlocksArray.length; indexOffset++) {
+        const independentBlockElement = structuralSplitBlocksArray[indexOffset];
 
-        let titleText = "Target Indexed Block Element";
-        const titleRegexMatch = itemBlock.match(/class="result__url"[^>]*>([^<]+)/);
-        if (titleRegexMatch && titleRegexMatch[1]) {
-            titleText = titleRegexMatch[1].trim();
+        let targetTitleText = "Target Indexed Block Element";
+        const titleExtractionRegex = independentBlockElement.match(/class="result__url"[^>]*>([^<]+)/);
+        if (titleExtractionRegex && titleExtractionRegex[1]) {
+            targetTitleText = titleExtractionRegex[1].trim();
         }
 
-        let trackingUrl = "#";
-        const urlRegexMatch = itemBlock.match(/href="([^"]+)"/);
-        if (urlRegexMatch && urlRegexMatch[1]) {
-            trackingUrl = urlRegexMatch[1];
-            if (trackingUrl.includes("uddg=")) {
-                const urlParts = trackingUrl.split("uddg=");
-                if (urlParts[1]) {
-                    trackingUrl = decodeURIComponent(urlParts[1].split("&")[0]);
+        let linkRedirectionUrl = "#";
+        const urlExtractionRegex = independentBlockElement.match(/href="([^"]+)"/);
+        if (urlExtractionRegex && urlExtractionRegex[1]) {
+            linkRedirectionUrl = urlExtractionRegex[1];
+            if (linkRedirectionUrl.includes("uddg=")) {
+                const innerSplits = linkRedirectionUrl.split("uddg=");
+                if (innerSplits[1]) {
+                    linkRedirectionUrl = decodeURIComponent(innerSplits[1].split("&")[0]);
                 }
             }
         }
 
-        let snippetText = "No descriptive information packet recovered along this stream lane.";
-        const snippetRegexMatch = itemBlock.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
-        if (snippetRegexMatch && snippetRegexMatch[1]) {
-            snippetText = snippetRegexMatch[1].replace(/<[^>]*>/g, "").trim();
+        let summarySnippetText = "No descriptive information packet recovered along this stream lane.";
+        const snippetExtractionRegex = independentBlockElement.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+        if (snippetExtractionRegex && snippetExtractionRegex[1]) {
+            summarySnippetText = snippetExtractionRegex[1].replace(/<[^>]*>/g, "").trim();
         }
 
-        processedSearchItems.push({ title: titleText, link: trackingUrl, description: snippetText });
+        cleanOutputDictionaryArray.push({ title: targetTitleText, link: linkRedirectionUrl, description: summarySnippetText });
     }
 
-    if (processedSearchItems.length === 0) {
+    if (cleanOutputDictionaryArray.length === 0) {
         outputCanvas.innerHTML = `
             <div class="placeholder-msg">
                 <p>No clean text metadata items extracted.</p>
-                <small>The node returned an alternate HTML payload structure or empty stream bounds. Try another query.</small>
+                <small>The node returned a structured captcha page, or hit network transmission timeouts. Adjust node fields.</small>
             </div>
         `;
         return;
     }
 
-    processedSearchItems.forEach(itemData => {
-        const resultCardElement = document.createElement('div');
-        resultCardElement.className = 'result-card';
-        resultCardElement.innerHTML = `
-            <h3>${sanitizeOutputs(itemData.title)}</h3>
-            <a href="${sanitizeOutputs(itemData.link)}" target="_blank">${sanitizeOutputs(itemData.link)}</a>
-            <p>${sanitizeOutputs(itemData.description)}</p>
+    cleanOutputDictionaryArray.forEach(cardMetaElement => {
+        const structuralDivContainer = document.createElement('div');
+        structuralDivContainer.className = 'result-card';
+        structuralDivContainer.innerHTML = `
+            <h3>${sanitizePipelineStrings(cardMetaElement.title)}</h3>
+            <a href="${sanitizePipelineStrings(cardMetaElement.link)}" target="_blank">${sanitizePipelineStrings(cardMetaElement.link)}</a>
+            <p>${sanitizePipelineStrings(cardMetaElement.description)}</p>
         `;
-        outputCanvas.appendChild(resultCardElement);
+        outputCanvas.appendChild(structuralDivContainer);
     });
 }
 
-function sanitizeOutputs(stringText) {
-    if (!stringText) return "";
-    return stringText
+function sanitizePipelineStrings(dirtyInputStringText) {
+    if (!dirtyInputStringText) return "";
+    return dirtyInputStringText
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -250,4 +245,4 @@ function sanitizeOutputs(stringText) {
         .replace(/'/g, "&#039;");
 }
 
-establishWispPipeline();
+initializeWispConnection();
