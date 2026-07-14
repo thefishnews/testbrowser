@@ -1,10 +1,9 @@
 const statusText = document.getElementById('status-text');
 
-// Handle registration and force immediate claim on activation lifecycle
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/__scramjet__/' })
+    // Changing scope to '/' forces the worker to activate over Vercel's static router
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then(reg => {
-            // Force worker activation immediately instead of waiting for tabs to close
             if (reg.installing) {
                 statusText.textContent = "Installing browser engine...";
                 statusText.style.color = "#fbbf24";
@@ -26,7 +25,6 @@ if ('serviceWorker' in navigator) {
     statusText.style.color = "#ef4444";
 }
 
-// Intercept submission entries natively
 document.getElementById('proxy-form').addEventListener('submit', function(e) {
     e.preventDefault();
     let input = document.getElementById('url-input').value.trim();
@@ -39,6 +37,5 @@ document.getElementById('proxy-form').addEventListener('submit', function(e) {
         }
     }
 
-    // Direct path formatting matching Scramjet architecture expectations
     window.location.href = '/__scramjet__/' + btoa(input).replace(/=/g, '');
 });
