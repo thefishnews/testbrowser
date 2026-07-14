@@ -3,46 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Browser Dashboard</title>
+    <title>Test Browser</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="app-container">
-        <!-- System Control Header Matrix -->
-        <header class="main-header">
-            <div class="brand">
-                <h2>Wisp Transport Vector Engine</h2>
-                <div class="status-badge" id="network-status">Initializing Core Pipeline...</div>
-            </div>
-            
-            <!-- Target Endpoint Routing Selector -->
-            <div class="proxy-config-panel">
-                <div class="input-group">
-                    <label for="wisp-url-input">Wisp Socket Gateway Entry:</label>
-                    <input type="text" id="wisp-url-input" placeholder="wss://your-wisp-proxy.com">
-                </div>
-                <button id="connect-btn" class="accent-btn">Update Route</button>
-            </div>
-        </header>
-
-        <!-- Command Execution Row -->
-        <section class="navigation-bar">
-            <div class="search-group">
-                <input type="text" id="query-input" placeholder="Enter target search query (e.g., Eaglercraft clients)...">
-                <button id="fetch-btn" class="primary-btn">Fetch Query</button>
-            </div>
-        </section>
-
-        <!-- DOM Extraction Terminal Canvas -->
-        <main class="display-canvas" id="output-canvas">
-            <div class="placeholder-msg">
-                <p>Awaiting manual input submission stream over WebSockets.</p>
-                <small>Fallback Default Node: wss://anura.pro</small>
-            </div>
-        </main>
+    <div class="container">
+        <h1>Test Browser</h1>
+        <div class="dev-badge">Developed & Made Solely By: <strong>aroze_</strong></div>
+        
+        <form id="proxy-form" class="search-box">
+            <input type="text" id="url-input" placeholder="Enter URL or search query..." required autocomplete="off">
+            <button type="submit">Launch</button>
+        </form>
+        <div class="status" id="status-text">Connecting to Wisp Network Engine...</div>
     </div>
 
-    <script src="script.js"></script>
+    <footer>
+        Powered by Scramjet Engine & Wisp Protocol
+    </footer>
+
+    <script src="main.js"></script>
 </body>
 </html>
