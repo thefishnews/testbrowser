@@ -1,6 +1,5 @@
-// Import scripts locally to bypass Vercel Content Security Policies
-importScripts('/scramjet.codecs.js');
-importScripts('/scramjet.worker.js');
+self.importScripts('/scramjet.codecs.js');
+self.importScripts('/scramjet.worker.js');
 
 const scramjetWorker = new ScramjetWorker({
     prefix: '/__scramjet__/',
@@ -12,8 +11,8 @@ const scramjetWorker = new ScramjetWorker({
     }
 });
 
-self.addEventListener('install', () => {
-    self.skipWaiting();
+self.addEventListener('install', event => {
+    event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', event => {
@@ -21,7 +20,8 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.url.includes('/__scramjet__/')) {
+    // Intercept both proxy paths and sub-assets matching the Scramjet namespace
+    if (event.request.url.includes('/__scramjet__') || event.request.url.includes('?__scramjet__')) {
         event.respondWith(scramjetWorker.fetch(event));
     }
 });
