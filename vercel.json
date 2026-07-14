@@ -1,8 +1,0 @@
-{
-  "name": "testbrowser",
-  "version": 2,
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/api/proxy", "destination": "/api/proxy.js" }
-  ]
-}
