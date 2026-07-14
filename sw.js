@@ -11,8 +11,7 @@ const scramjetWorker = new ScramjetWorker({
     }
 });
 
-// Force the worker to activate immediately without waiting for a tab refresh
-self.addEventListener('install', event => {
+self.addEventListener('install', () => {
     self.skipWaiting();
 });
 
@@ -21,6 +20,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+    // request intercepter
     if (event.request.url.includes('/__scramjet__/')) {
         event.respondWith(scramjetWorker.fetch(event));
     }

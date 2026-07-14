@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Browser</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- css is ass -->
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -16,13 +17,29 @@
             <input type="text" id="url-input" placeholder="Enter URL or search query..." required autocomplete="off">
             <button type="submit">Launch</button>
         </form>
+        
         <div class="status" id="status-text">Connecting to Wisp Network Engine...</div>
+
+        <!-- femboy -->
+        <div class="settings-container">
+            <span class="settings-toggle" id="settings-btn">Settings</span>
+            <div class="settings-menu" id="settings-menu">
+                <label for="engine-select">Search Engine:</label>
+                <select id="engine-select">
+                    <option value="duckduckgo" selected>DuckDuckGo (Default & Recommended)</option>
+                    <option value="brave">Brave</option>
+                    <option value="edge">Microsoft Edge</option>
+                    <option value="chrome">Google Chrome</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <footer>
         Powered by Scramjet Engine & Wisp Protocol
     </footer>
 
-    <script src="main.js"></script>
+    <!-- gang why isnt ts working twinnn -->
+    <script src="/main.js"></script>
 </body>
 </html>

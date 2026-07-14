@@ -12,6 +12,7 @@ body {
     height: 100vh;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 .container {
     width: 90%;
@@ -69,6 +70,51 @@ button:hover {
     margin-top: 15px;
     font-size: 0.85rem;
     color: #64748b;
+}
+.settings-container {
+    margin-top: 20px;
+    position: relative;
+    display: inline-block;
+}
+.settings-toggle {
+    font-size: 0.9rem;
+    color: #6366f1;
+    cursor: pointer;
+    text-decoration: underline;
+    user-select: none;
+    transition: color 0.2s;
+}
+.settings-toggle:hover {
+    color: #818cf8;
+}
+.settings-menu {
+    display: none;
+    margin-top: 10px;
+    background: #1e1e24;
+    border: 1px solid #2e2e38;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.settings-menu.show {
+    display: block;
+}
+.settings-menu label {
+    display: block;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 5px;
+}
+.settings-menu select {
+    width: 100%;
+    background: #0f0f12;
+    border: 1px solid #2e2e38;
+    color: white;
+    padding: 6px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
 }
 footer {
     position: absolute;
