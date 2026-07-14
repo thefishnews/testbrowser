@@ -1,11 +1,8 @@
 {
-  "version": 2,
   "name": "testbrowser",
+  "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/proxy", "destination": "/api/proxy.js" }
   ]
 }
