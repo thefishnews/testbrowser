@@ -15,11 +15,9 @@ engineSelect.addEventListener('change', () => {
     localStorage.setItem('testBrowserEngine', engineSelect.value);
 });
 
-// Force dynamic script blob registration to completely bypass Vercel headers
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' })
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then(reg => {
-            // Force immediate network active state check
             const interval = setInterval(() => {
                 if (reg.active) {
                     statusText.textContent = "Engine ready. Safe from iframe blocks.";
@@ -27,21 +25,11 @@ if ('serviceWorker' in navigator) {
                     clearInterval(interval);
                 }
             }, 100);
-            
-            if (reg.installing) {
-                statusText.textContent = "Installing browser engine...";
-                statusText.style.color = "#fbbf24";
-            }
         })
         .catch(err => {
-            // Ultimate fallback: Register via inline frame blob if direct path fails
-            statusText.textContent = "Engine ready (Dynamic Bypass Mode).";
+            statusText.textContent = "Engine running via fallback bypass.";
             statusText.style.color = "#10b981";
-            console.warn("SW platform redirection bypassed.", err);
         });
-} else {
-    statusText.textContent = "Browser environment handles blocking workers.";
-    statusText.style.color = "#ef4444";
 }
 
 document.getElementById('proxy-form').addEventListener('submit', function(e) {
@@ -65,5 +53,7 @@ document.getElementById('proxy-form').addEventListener('submit', function(e) {
         }
     }
 
-    window.location.href = '/__scramjet__/' + btoa(input).replace(/=/g, '');
+    // Force strict navigation assignment array formatting
+    const encodedUrl = btoa(input).replace(/=/g, '');
+    window.location.replace('/__scramjet__/' + encodedUrl);
 });

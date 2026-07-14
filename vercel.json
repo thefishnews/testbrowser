@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "cleanUrls": false,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/sw.js",
@@ -28,6 +30,7 @@
     { "source": "/scramjet.worker.js", "destination": "/scramjet.worker.js" },
     { "source": "/style.css", "destination": "/style.css" },
     { "source": "/main.js", "destination": "/main.js" },
-    { "source": "/__scramjet__/(.*)", "destination": "/404.html" }
+    { "source": "/__scramjet__/(.*)", "destination": "/404.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
