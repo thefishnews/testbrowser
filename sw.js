@@ -1,5 +1,6 @@
-importScripts('https://jsdelivr.net');
-importScripts('https://jsdelivr.net');
+// Import scripts locally to bypass Vercel Content Security Policies
+importScripts('/scramjet.codecs.js');
+importScripts('/scramjet.worker.js');
 
 const scramjetWorker = new ScramjetWorker({
     prefix: '/__scramjet__/',
@@ -20,7 +21,6 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // request intercepter
     if (event.request.url.includes('/__scramjet__/')) {
         event.respondWith(scramjetWorker.fetch(event));
     }

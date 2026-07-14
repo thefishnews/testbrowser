@@ -8,10 +8,24 @@
         { "key": "Service-Worker-Allowed", "value": "/" },
         { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
       ]
+    },
+    {
+      "source": "/scramjet.codecs.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" }
+      ]
+    },
+    {
+      "source": "/scramjet.worker.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" }
+      ]
     }
   ],
   "rewrites": [
     { "source": "/sw.js", "destination": "/sw.js" },
+    { "source": "/scramjet.codecs.js", "destination": "/scramjet.codecs.js" },
+    { "source": "/scramjet.worker.js", "destination": "/scramjet.worker.js" },
     { "source": "/style.css", "destination": "/style.css" },
     { "source": "/main.js", "destination": "/main.js" },
     { "source": "/(.*)", "destination": "/index.html" }
