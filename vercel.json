@@ -27,6 +27,7 @@
     { "source": "/scramjet.codecs.js", "destination": "/scramjet.codecs.js" },
     { "source": "/scramjet.worker.js", "destination": "/scramjet.worker.js" },
     { "source": "/style.css", "destination": "/style.css" },
-    { "source": "/main.js", "destination": "/main.js" }
+    { "source": "/main.js", "destination": "/main.js" },
+    { "source": "/__scramjet__/(.*)", "destination": "/404.html" }
   ]
 }

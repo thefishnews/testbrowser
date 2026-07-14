@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading...</title>
+    <script>
+        // Force the page to immediately look for the running Service Worker engine
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            window.location.reload();
+        } else {
+            // Fallback back to home if engine dropped out of RAM
+            window.location.href = "/";
+        }
+    </script>
+</head>
+<body>
+    <p style="font-family: sans-serif; color: #94a3b8; text-align: center; margin-top: 20%;">Loading secure proxy stream...</p>
+</body>
+</html>
