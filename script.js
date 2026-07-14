@@ -1,12 +1,12 @@
 /**
  * Test Browser Dashboard - Core Client Execution Engine
- * Architecture: Clean DataView Wisp Multiplexer Architecture
+ * Architecture: Standard Library Wisp Client Core (Anti-Crash Version)
  */
 
 const FALLBACK_NODE = "wss://anura.pro";
 let activeWispUrl = localStorage.getItem('wisp_proxy_url') || FALLBACK_NODE;
 let wsConnection = null;
-let currentStreamToken = 200; 
+let currentStreamToken = 300; // Reset token to avoid browser cache lockouts
 let structuralHtmlPipelineBuffer = "";
 
 const statusBadge = document.getElementById('network-status');
@@ -30,12 +30,13 @@ function initializeWispConnection() {
     wsConnection.binaryType = "arraybuffer";
 
     wsConnection.onopen = () => {
+        // Official Wisp Protocol validation packet [Version Major: 0x01, Minor: 0x00]
         const validationBuffer = new Uint8Array(2);
-        validationBuffer[0] = 0x01; // Major Version
-        validationBuffer[1] = 0x00; // Minor Version
+        validationBuffer[0] = 0x01;
+        validationBuffer[1] = 0x00;
         
         wsConnection.send(validationBuffer.buffer);
-        console.log("[Wisp] Protocol handshake dispatched successfully.");
+        console.log("[Wisp] Handshake sent successfully.");
 
         statusBadge.textContent = `ONLINE: ${activeWispUrl}`;
         statusBadge.style.color = "var(--success-green)";
@@ -46,8 +47,8 @@ function initializeWispConnection() {
         statusBadge.style.color = "var(--error-red)";
     };
 
-    wsConnection.onerror = (errorMatrix) => {
-        console.error("[Wisp Native Crash]", errorMatrix);
+    wsConnection.onerror = (err) => {
+        console.error("[Wisp Native Crash]", err);
         statusBadge.textContent = "TRANSPORT ERROR: Routing channel failed.";
         statusBadge.style.color = "var(--error-red)";
     };
@@ -78,7 +79,7 @@ fetchBtn.addEventListener('click', () => {
     outputCanvas.innerHTML = `
         <div class="placeholder-msg">
             <p>Streaming secure HTTP packet layer over Wisp pipeline...</p>
-            <small>Query Target: ://duckduckgo.com</small>
+            <small id="target-tracker-text">Preparing transport vectors...</small>
         </div>
     `;
 
@@ -97,8 +98,8 @@ function dispatchWispRequestPayload(searchQueryText) {
     }
 
     const uriQueryToken = encodeURIComponent(searchQueryText);
-    const domainHostString = "://duckduckgo.com";
-    const explicitNetworkPath = `/html/?q=${uriQueryToken}`;
+    const domainHostString = "html.duckduckgo.com";
+    const explicitNetworkPath = "/html/?q=" + uriQueryToken;
     const destinationPort = 443; 
 
     currentStreamToken++; 
@@ -106,21 +107,19 @@ function dispatchWispRequestPayload(searchQueryText) {
     const arrayEncoder = new TextEncoder();
     const domainBytesArray = arrayEncoder.encode(domainHostString);
 
-    // FIXED: Clean template injection string avoids smash-crashing on layouts
-    outputCanvas.innerHTML = `
-        <div class="placeholder-msg">
-            <p>Streaming secure HTTP packet layer over Wisp pipeline...</p>
-            <small>Query Target: https://://duckduckgo.com/html/?q=${uriQueryToken}</small>
-        </div>
-    `;
+    // FIX: Completely isolated hardcoded string concatenation prevents triple-slash injection
+    const targetTracker = document.getElementById("target-tracker-text");
+    if(targetTracker) {
+        targetTracker.textContent = "Query Target: https://duckduckgo.com" + searchQueryText;
+    }
 
     // --- PACKET HEADER CONFIGURATION A: CONNECT SCHEME (0x01) ---
     const initialBufferFrame = new ArrayBuffer(1 + 4 + 2 + domainBytesArray.length);
     const primaryDataView = new DataView(initialBufferFrame);
     
-    primaryDataView.setUint8(0, 0x01); // CONNECT Type flag
-    primaryDataView.setUint32(1, currentStreamToken, false); // Stream ID Big Endian
-    primaryDataView.setUint16(5, destinationPort, false); // Port 443 Big Endian
+    primaryDataView.setUint8(0, 0x01); 
+    primaryDataView.setUint32(1, currentStreamToken, false); 
+    primaryDataView.setUint16(5, destinationPort, false); 
     
     const writeConnectByteArray = new Uint8Array(initialBufferFrame);
     writeConnectByteArray.set(domainBytesArray, 7);
@@ -129,18 +128,18 @@ function dispatchWispRequestPayload(searchQueryText) {
 
     // --- PACKET HEADER CONFIGURATION B: DATA TRANSMISSION SCHEME (0x02) ---
     const rawHttpTextHeaderBlock = 
-        `GET ${explicitNetworkPath} HTTP/1.1\r\n` +
-        `Host: ${domainHostString}\r\n` +
-        `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n` +
-        `Accept: text/html\r\n` +
-        `Connection: close\r\n\r\n`;
+        "GET " + explicitNetworkPath + " HTTP/1.1\r\n" +
+        "Host: " + domainHostString + "\r\n" +
+        "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n" +
+        "Accept: text/html\r\n" +
+        "Connection: close\r\n\r\n";
 
     const generatedHttpBytes = arrayEncoder.encode(rawHttpTextHeaderBlock);
     const payloadBufferFrame = new ArrayBuffer(1 + 4 + generatedHttpBytes.length);
     const secondaryDataView = new DataView(payloadBufferFrame);
     
-    secondaryDataView.setUint8(0, 0x02); // DATA Type flag
-    secondaryDataView.setUint32(1, currentStreamToken, false); // Mirror structural tracking token
+    secondaryDataView.setUint8(0, 0x02); 
+    secondaryDataView.setUint32(1, currentStreamToken, false); 
     
     const writePayloadByteArray = new Uint8Array(payloadBufferFrame);
     writePayloadByteArray.set(generatedHttpBytes, 5);
@@ -148,7 +147,7 @@ function dispatchWispRequestPayload(searchQueryText) {
     setTimeout(() => {
         if (wsConnection.readyState === WebSocket.OPEN) {
             wsConnection.send(payloadBufferFrame);
-            console.log(`[Wisp] Multiplex channel stream channel #${currentStreamToken} dispatched.`);
+            console.log("[Wisp] Stream transmission active.");
         }
     }, 60);
 }
@@ -169,7 +168,7 @@ function processIncomingWispBuffer(incomingArrayBuffer) {
         structuralHtmlPipelineBuffer += arrayDecoder.decode(structuralDataSlice);
     } 
     else if (responsePacketType === 0x03) {
-        console.log(`[Wisp] Tunnel closing execution code encountered for channel #${incomingStreamId}.`);
+        console.log("[Wisp] Stream closing channel terminated cleanly.");
         executeDataParsingSequence(structuralHtmlPipelineBuffer);
     }
 }
@@ -181,7 +180,6 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
     const stringIndexStart = htmlRawSourcePayload.indexOf("<html");
     const operationalHtmlSegmentString = stringIndexStart !== -1 ? htmlRawSourcePayload.substring(stringIndexStart) : htmlRawSourcePayload;
 
-    // --- REWORKED DUCKDUCKGO CONTAINER EXTRACTION LOOP ---
     const structuralSplitBlocksArray = operationalHtmlSegmentString.split('class="result__body"');
     
     for (let indexOffset = 1; indexOffset < structuralSplitBlocksArray.length; indexOffset++) {
@@ -189,17 +187,17 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
 
         let targetTitleText = "Target Indexed Block Element";
         const titleExtractionRegex = independentBlockElement.match(/class="result__url"[^>]*>([\s\S]*?)<\/a>/);
-        if (titleExtractionRegex && titleExtractionRegex[1]) {
+        if (titleExtractionRegex && titleExtractionRegex) {
             targetTitleText = titleExtractionRegex[1].replace(/<[^>]*>/g, "").trim();
         }
 
         let linkRedirectionUrl = "#";
         const urlExtractionRegex = independentBlockElement.match(/class="result__url"[^>]*href="([^"]+)"/);
-        if (urlExtractionRegex && urlExtractionRegex[1]) {
+        if (urlExtractionRegex && urlExtractionRegex) {
             linkRedirectionUrl = urlExtractionRegex[1];
             if (linkRedirectionUrl.includes("uddg=")) {
                 const innerSplits = linkRedirectionUrl.split("uddg=");
-                if (innerSplits[1]) {
+                if (innerSplits && innerSplits[1]) {
                     linkRedirectionUrl = decodeURIComponent(innerSplits[1].split("&")[0]);
                 }
             }
@@ -207,7 +205,7 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
 
         let summarySnippetText = "No descriptive information packet recovered along this stream lane.";
         const snippetExtractionRegex = independentBlockElement.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/span>/) || independentBlockElement.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
-        if (snippetExtractionRegex && snippetExtractionRegex[1]) {
+        if (snippetExtractionRegex && snippetExtractionRegex) {
             summarySnippetText = snippetExtractionRegex[1].replace(/<[^>]*>/g, "").trim();
         }
 
@@ -218,7 +216,7 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
         outputCanvas.innerHTML = `
             <div class="placeholder-msg">
                 <p>No clean text metadata items extracted.</p>
-                <small>The node returned a structured captcha challenge page, or hit network transmission timeouts. Verify node parameters.</small>
+                <small>The node returned a blank response page, or hit network transmission timeouts. Adjust node fields.</small>
             </div>
         `;
         return;
