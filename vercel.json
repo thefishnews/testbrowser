@@ -1,6 +1,19 @@
 {
+  "version": 2,
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" },
+        { "key": "Service-Worker-Allowed", "value": "/" },
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate" }
+      ]
+    }
+  ],
   "rewrites": [
-    { "source": "/__scramjet__/(.*)", "destination": "/index.html" },
-    { "source": "/sw.js", "destination": "/sw.js" }
+    { "source": "/sw.js", "destination": "/sw.js" },
+    { "source": "/style.css", "destination": "/style.css" },
+    { "source": "/main.js", "destination": "/main.js" },
+    { "source": "/__scramjet__/(.*)", "destination": "/index.html" }
   ]
 }
