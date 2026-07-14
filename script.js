@@ -106,10 +106,11 @@ function dispatchWispRequestPayload(searchQueryText) {
     const arrayEncoder = new TextEncoder();
     const domainBytesArray = arrayEncoder.encode(domainHostString);
 
+    // FIXED: Clean template injection string avoids smash-crashing on layouts
     outputCanvas.innerHTML = `
         <div class="placeholder-msg">
             <p>Streaming secure HTTP packet layer over Wisp pipeline...</p>
-            <small>Query Target: https://${domainHostString}${explicitNetworkPath}</small>
+            <small>Query Target: https://://duckduckgo.com/html/?q=${uriQueryToken}</small>
         </div>
     `;
 
@@ -198,7 +199,7 @@ function executeDataParsingSequence(htmlRawSourcePayload) {
             linkRedirectionUrl = urlExtractionRegex[1];
             if (linkRedirectionUrl.includes("uddg=")) {
                 const innerSplits = linkRedirectionUrl.split("uddg=");
-                if (innerSplits && innerSplits[1]) {
+                if (innerSplits[1]) {
                     linkRedirectionUrl = decodeURIComponent(innerSplits[1].split("&")[0]);
                 }
             }
